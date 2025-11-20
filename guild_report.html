@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Báo Cáo Tông Môn</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: white;
+        padding: 20px;
+    }
+    h1 { font-size: 30px; margin-bottom: 5px; }
+    h2 { font-size: 18px; margin-bottom: 20px; color: #94a3b8; }
+
+    .stats-container {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+    .stat-box {
+        background: #1e293b;
+        padding: 15px 25px;
+        border-radius: 12px;
+        text-align: center;
+        min-width: 160px;
+        box-shadow: 0 0 10px #00000050;
+    }
+    .stat-box .number { font-size: 24px; font-weight: bold; color: #22c55e; }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #1e293b;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    th {
+        background: #334155;
+        padding: 12px 8px;
+        text-align: left;
+        font-weight: bold;
+        cursor: pointer;
+        user-select: none;
+    }
+    td {
+        padding: 10px 8px;
+        border-top: 1px solid #334155;
+    }
+
+    th:nth-child(1), td:nth-child(1) { min-width: 60px; }
+    th:nth-child(2), td:nth-child(2) { min-width: 70px; text-align: center; }
+    th:nth-child(3), td:nth-child(3) { min-width: 200px; }
+    th:nth-child(4), td:nth-child(4) { min-width: 130px; }
+    th:nth-child(5), td:nth-child(5) { min-width: 120px; text-align: center; }
+    th:nth-child(6), td:nth-child(6) { min-width: 170px; }
+    th:nth-child(7), td:nth-child(7) { min-width: 120px; text-align: center; }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+        object-fit: cover;
+    }
+    .green { color: #22c55e; font-weight: bold; }
+    .red { color: #ef4444; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<center><h1 id="guild-name">Đang tải...</h1></center>
+<h2 id="report-date">Báo cáo hôm nay</h2>
+
+<div class="stats-container">
+    <div class="stat-box">
+        Tổng Thành Viên<br><span id="total-members" class="number">0</span>
+    </div>
+    <div class="stat-box">
+        Đã Cống Hiến<br><span id="donated-count" class="number">0</span>
+    </div>
+    <div class="stat-box">
+        Tổng Vàng Cống<br><span id="total-gold" class="number">0</span>
+    </div>
+    <div class="stat-box">
+        Tỷ Lệ Hoàn Thành<br><span id="percent" class="number">0%</span>
+    </div>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th data-sort="id">ID</th>
+            <th>Ảnh</th>
+            <th data-sort="name">Tên Nhân Vật</th>
+            <th data-sort="role">Vai Trò</th>
+            <th data-sort="gold">Vàng Đã Cống</th>
+            <th data-sort="online">Online Lần Cuối</th>
+            <th data-sort="point">Điểm Tông Môn Chiến</th>
+        </tr>
+    </thead>
+    <tbody id="guild-table"></tbody>
+</table>
+
+<script>
+const guild_id = 22; //chỗ thay id tông môn
+
+const roleMap = {
+    "1": "Tông chủ",
+    "2": "Phó Tông chủ",
+    "3": "Trưởng lão",
+    "4": "Thành viên"
+};
+
+// Format thời gian chuẩn Việt Nam
+function toVietnamTime(str) {
+    const d = new Date(str.replace(" ", "T"));
+    if (isNaN(d)) return str;
+    const dd = d.getDate().toString().padStart(2, "0");
+    const mm = (d.getMonth() + 1).toString().padStart(2, "0");
+    const yyyy = d.getFullYear();
+    const h = d.getHours().toString().padStart(2, "0");
+    const m = d.getMinutes().toString().padStart(2, "0");
+    const s = d.getSeconds().toString().padStart(2, "0");
+    return `${h}:${m}:${s} - ${dd}/${mm}/${yyyy}`;
+}
+
+// SORT SYSTEM
+let currentSort = { column: null, asc: true };
+
+function sortTable(column) {
+    const tbody = document.getElementById("guild-table");
+    let rows = Array.from(tbody.querySelectorAll("tr"));
+
+    rows.sort((a, b) => {
+        let A = a.dataset[column];
+        let B = b.dataset[column];
+
+        if (!isNaN(A) && !isNaN(B)) {
+            A = Number(A);
+            B = Number(B);
+        }
+        if (column === "online") {
+            A = new Date(A).getTime();
+            B = new Date(B).getTime();
+        }
+
+        if (A < B) return currentSort.asc ? -1 : 1;
+        if (A > B) return currentSort.asc ? 1 : -1;
+        return 0;
+    });
+
+    tbody.innerHTML = "";
+    rows.forEach(r => tbody.appendChild(r));
+}
+
+async function loadGuildReport() {
+
+    // API điểm TMC
+    let scoreAPI = await fetch("https://cmangax8.com/api/score_list?type=guild_battle_player&limit=500");
+    let scoreList = await scoreAPI.json();
+
+    // Map điểm theo ID nhân vật
+    const scoreMap = {};
+    scoreList.forEach(s => {
+        if (s.info) {
+            const inf = JSON.parse(s.info);
+            scoreMap[inf.id] = Number(s.score);
+        }
+    });
+
+    // Danh sách thành viên
+    let memberAPI = await fetch(`https://cmangax8.com/api/game_guild_member?waiting=0&guild=${guild_id}`);
+    let memberList = await memberAPI.json();
+
+    // Thông tin tông + donate
+    let donateAPI = await fetch(`https://cmangax8.com/api/get_data_by_id?table=game_guild&data=data,donate&id=${guild_id}`);
+    let donateData = await donateAPI.json();
+
+    let guildInfo = JSON.parse(donateData.data);
+    let donate = JSON.parse(donateData.donate || "{}");
+	
+const guildTitle = document.getElementById("guild-name");
+guildTitle.textContent = ""; // Xóa nội dung cũ
+
+// Dòng 1: tiêu đề
+const titleSpan = document.createElement("span");
+titleSpan.innerText = "Báo Cáo Tông Môn";
+// Style có thể chỉnh
+titleSpan.style.color = "brown";
+titleSpan.style.fontSize = "26px";
+titleSpan.style.fontWeight = "600";
+titleSpan.style.letterSpacing = "1px";
+
+// Xuống dòng
+const br1 = document.createElement("br");
+const br2 = document.createElement("br");
+
+// Dòng 2: tên tông môn màu đỏ + full style
+const nameSpan = document.createElement("span");
+nameSpan.innerText = guildInfo.name;
+
+// Full style để bạn tự tuỳ chỉnh
+nameSpan.style.color = "Red";
+nameSpan.style.fontSize = "30px";
+nameSpan.style.fontWeight = "700";
+nameSpan.style.textShadow = "0 0 8px rgba(255, 157, 157, 0.5)";
+nameSpan.style.letterSpacing = "1px";
+nameSpan.style.marginTop = "5px";
+nameSpan.style.display = "inline-block";
+
+// Ghép vào DOM
+guildTitle.appendChild(titleSpan);
+guildTitle.appendChild(br1);
+guildTitle.appendChild(br2);
+guildTitle.appendChild(nameSpan);
+
+
+	
+// Hiển thị ngày hôm nay
+    const now = new Date();
+    document.getElementById("report-date").innerText =
+        `Báo cáo hôm nay – ${now.getDate().toString().padStart(2, "0")}/${(now.getMonth() + 1)
+        .toString().padStart(2,"0")}/${now.getFullYear()}`;
+
+    const tbody = document.getElementById("guild-table");
+
+    let donatedCount = 0;
+    let totalGold = 0;
+
+    memberList.forEach(mem => {
+        const info = JSON.parse(mem.info);
+        const gold = donate[mem.id_game_character] ? Number(donate[mem.id_game_character]) : 0;
+        const donated = gold > 0;
+        const point = scoreMap[info.id] || 0;
+
+        if (donated) {
+            donatedCount++;
+            totalGold += gold;
+        }
+
+        const tr = document.createElement("tr");
+        tr.dataset.id = info.id;
+        tr.dataset.name = info.name.toLowerCase();
+        tr.dataset.role = mem.role;
+        tr.dataset.gold = gold;
+        tr.dataset.online = mem.last_online;
+        tr.dataset.point = point;
+
+        tr.innerHTML = `
+            <td>${info.id}</td>
+            <td><img class="avatar" src="https://cmangax8.com/assets/tmp/avatar/${info.avatar}"></td>
+            <td>${info.name}</td>
+            <td>${roleMap[mem.role] || "Không rõ"}</td>
+            <td class="${donated ? 'green' : 'red'}">${donated ? gold : "Chưa cống"}</td>
+            <td>${toVietnamTime(mem.last_online)}</td>
+            <td class="green">${point}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById("total-members").innerText = memberList.length;
+    document.getElementById("donated-count").innerText = donatedCount;
+    document.getElementById("total-gold").innerText = totalGold.toLocaleString("vi-VN");
+    document.getElementById("percent").innerText =
+        ((donatedCount / memberList.length) * 100).toFixed(1) + "%";
+
+    // Gắn sort header
+    document.querySelectorAll("th[data-sort]").forEach(th => {
+        th.addEventListener("click", () => {
+            const column = th.dataset.sort;
+            if (currentSort.column === column) {
+                currentSort.asc = !currentSort.asc;
+            } else {
+                currentSort.column = column;
+                currentSort.asc = true;
+            }
+            sortTable(column);
+        });
+    });
+}
+
+loadGuildReport();
+</script>
+
+</body>
+</html>

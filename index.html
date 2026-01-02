@@ -223,18 +223,18 @@ async function fetchJSON(url) {
 async function loadGuildReport_once() {
     try {
         // guild info + donate
-        const donateUrl = `https://cmangax9.com/api/get_data_by_id?table=game_guild&data=data,donate&id=${guild_id}`;
+        const donateUrl = `https://cmangax10.com/api/get_data_by_id?table=game_guild&data=data,donate&id=${guild_id}`;
         const donateData = await fetchJSON(donateUrl);
         const guildInfo = safeParseJSON(donateData.data, {});
         const donate = safeParseJSON(donateData.donate, {});
 
         // member list (one-time)
-        const memberUrl = `https://cmangax9.com/api/game_guild_member?waiting=0&guild=${guild_id}`;
+        const memberUrl = `https://cmangax10.com/api/game_guild_member?waiting=0&guild=${guild_id}`;
         const memberList = await fetchJSON(memberUrl);
         cachedMembers = memberList; // keep for later if needed
 
         // score list
-        const scoreUrl = `https://cmangax9.com/api/score_list?type=guild_battle_player&limit=500`;
+        const scoreUrl = `https://cmangax10.com/api/score_list?type=guild_battle_player&limit=500`;
         const scoreList = await fetchJSON(scoreUrl);
         const scoreMap = {};
         scoreList.forEach(s => { if (s.info) { const inf = safeParseJSON(s.info); scoreMap[inf.id] = Number(s.score) || 0; } });
@@ -281,7 +281,7 @@ async function loadGuildReport_once() {
             const pointColor = rankColor(point);
             tr.innerHTML = `
                 <td>${info.id ?? ""}</td>
-                <td><img class="avatar" src="https://cmangax9.com/assets/tmp/avatar/${info.avatar ?? '1.png'}"></td>
+                <td><img class="avatar" src="https://cmangax10.com/assets/tmp/avatar/${info.avatar ?? '1.png'}"></td>
                 <td>${info.name ?? ""}</td>
                 <td>${roleMap[mem.role] || "Không rõ"}</td>
                 <td class="${donated ? 'green' : 'red'}">${donated ? gold : "Chưa cống"}</td>
@@ -323,7 +323,7 @@ async function loadBossReport_once(guildInfoParam) {
         // get guild info if not passed
         let guildInfo = guildInfoParam;
         if (!guildInfo) {
-            const donateUrl = `https://cmangax9.com/api/get_data_by_id?table=game_guild&data=data,donate&id=${guild_id}`;
+            const donateUrl = `https://cmangax10.com/api/get_data_by_id?table=game_guild&data=data,donate&id=${guild_id}`;
             const donateData = await fetchJSON(donateUrl);
             guildInfo = safeParseJSON(donateData.data, {});
         }
@@ -335,7 +335,7 @@ async function loadBossReport_once(guildInfoParam) {
         document.getElementById("boss-last-date").innerText = bossObj.day || "Chưa có";
 
         // fetch guild chat (guild channel)
-        const chatUrl = `https://cmangax9.com/api/chat?last=999999999&channel=guild&channel_id=${guild_id}`;
+        const chatUrl = `https://cmangax10.com/api/chat?last=999999999&channel=guild&channel_id=${guild_id}`;
         let chatData = [];
         try { chatData = await fetchJSON(chatUrl); } catch (e) { console.warn("Không lấy được chat:", e); }
 
@@ -414,4 +414,5 @@ loadGuildReport_once();
 
 </body>
 </html>
+
 

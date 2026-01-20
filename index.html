@@ -110,14 +110,14 @@ const getGold = (map,m)=>{const g=Number(map[String(m.id_game_character)]); retu
 
 async function loadGuildReport(){
   try{
-    const guildRes = await fetchJSON(`https://cmangax11.com/api/get_data_by_id?table=game_guild&data=data,donate&id=${guild_id}`);
+    const guildRes = await fetchJSON(`https://cmangax12.com/api/get_data_by_id?table=game_guild&data=data,donate&id=${guild_id}`);
     const guild = safeParse(guildRes.data.data);
     const donateMap = safeParse(guildRes.data.donate);
 
-    const membersRes = await fetchJSON(`https://cmangax11.com/api/game_guild_member?waiting=0&guild=${guild_id}`);
+    const membersRes = await fetchJSON(`https://cmangax12.com/api/game_guild_member?waiting=0&guild=${guild_id}`);
     const members = membersRes.data||membersRes;
 
-    const scoreRes = await fetchJSON(`https://cmangax11.com/api/score_list?type=guild_battle_player&limit=500`);
+    const scoreRes = await fetchJSON(`https://cmangax12.com/api/score_list?type=guild_battle_player&limit=500`);
     const scoreMap={}; (scoreRes.data||scoreRes).forEach(s=>{const i=s.info?safeParse(s.info):{}; if(i.id)scoreMap[i.id]=Number(s.score)||0;});
 
     document.getElementById("guild-name").innerText = guild.name||"Tông Môn";
@@ -139,7 +139,7 @@ async function loadGuildReport(){
       tr.dataset.point=point;
       tr.innerHTML=`
         <td class="debug-id">${m.id_game_character}</td>
-        <td><img class="avatar" src="https://cmangax11.com/assets/tmp/avatar/${info.avatar||"1.png"}"></td>
+        <td><img class="avatar" src="https://cmangax12.com/assets/tmp/avatar/${info.avatar||"1.png"}"></td>
         <td><b>${info.name||"N/A"}</b></td>
         <td>${roleMap[m.role]||"Thành viên"}</td>
         <td class="${gold>0?"green":"red"}">${gold>0?gold.toLocaleString():"Chưa Cống"}</td>
@@ -166,7 +166,7 @@ async function loadBossReport(guild){
     document.getElementById("boss-hit-count").innerText = bossObj.amount||0;
     document.getElementById("boss-last-date").innerText = bossObj.day||"Chưa có";
 
-    const chat = await fetchJSON(`https://cmangax11.com/api/chat?last=999999999&channel=guild&channel_id=${guild_id}`).catch(()=>[]);
+    const chat = await fetchJSON(`https://cmangax12.com/api/chat?last=999999999&channel=guild&channel_id=${guild_id}`).catch(()=>[]);
     const bossMap={};
     chat.forEach(c=>{
       if(!c.text) return;
@@ -197,4 +197,5 @@ loadGuildReport();
 </script>
 </body>
 </html>
+
 

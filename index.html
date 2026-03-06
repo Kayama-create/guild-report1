@@ -1,201 +1,280 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Báo Cáo Tông Môn</title>
-<style>
-body {font-family:'Segoe UI',Tahoma,sans-serif;background:#0f172a;color:#fff;padding:20px;}
-h1,h2{text-align:center;}
-h1{font-size:30px;margin-bottom:5px}
-h2{font-size:18px;color:#94a3b8;margin-bottom:20px}
-.stats-container{display:flex;gap:15px;margin-bottom:25px;flex-wrap:wrap}
-.stat-box{background:#1e293b;padding:15px;border-radius:12px;text-align:center;flex:1;min-width:140px;border:1px solid #334155;box-shadow:0 0 8px #00000050}
-.stat-box .number{font-size:24px;font-weight:bold;color:#22c55e}
-table{width:100%;border-collapse:collapse;background:#1e293b;border-radius:12px;overflow:hidden;margin-top:20px}
-th{background:#334155;padding:12px;text-align:left;cursor:pointer;color:#94a3b8;position:relative}
-th:hover{color:#fff;background:#475569}
-td{padding:10px;border-top:1px solid #334155}
-.avatar{width:35px;height:35px;border-radius:50%;object-fit:cover;border:1px solid #475569}
-.green{color:#22c55e;font-weight:bold}
-.red{color:#ef4444;font-weight:bold}
-.boss-box{background:#1e293b;padding:15px;margin-top:20px;border-radius:12px;border-left:4px solid #38bdf8;box-shadow:0 0 10px #00000050}
-.boss-title{font-size:22px;margin-bottom:8px;color:#38bdf8}
-.boss-list{margin-top:8px;font-size:14px;max-height:150px;overflow:auto;transition:opacity .35s ease;opacity:1}
-.boss-list.fade-out{opacity:0}
-th.sorted-asc::after{content:" ▲";color:#38bdf8}
-th.sorted-desc::after{content:" ▼";color:#38bdf8}
-tr:hover{background:#2d3748}
-.debug-id{font-size:10px;color:#64748b;font-family:monospace}
-@media(max-width:800px){.stats-container{flex-direction:column}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tông Môn Dashboard - Deep Dark Edition</title>
+    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #02040a;
+            --card-bg: rgba(13, 17, 23, 0.8);
+            --accent: #00d2ff;
+            --accent-glow: rgba(0, 210, 255, 0.4);
+            --success: #00ff88;
+            --danger: #ff4b5c;
+            --warning: #ffcc00;
+            --text-main: #f0f6fc;
+            --text-sub: #8b949e;
+            --border: rgba(48, 54, 61, 0.8);
+        }
+
+        * { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(0, 210, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(147, 51, 234, 0.05) 0%, transparent 40%);
+            color: var(--text-main);
+            margin: 0; padding: 40px 15px;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 45px; }
+        h1 {
+            font-size: 3.2rem; font-weight: 800; margin: 0;
+            letter-spacing: -2px;
+            background: linear-gradient(180deg, #fff 0%, var(--accent) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px var(--accent-glow));
+        }
+        #report-date {
+            color: var(--text-sub); font-size: 0.9rem; margin-top: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .live-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); animation: blink 1.5s infinite; }
+
+        /* Bento Stats */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 40px;
+        }
+        .stat-card {
+            background: var(--card-bg); backdrop-filter: blur(20px);
+            padding: 24px 15px; border-radius: 24px; border: 1px solid var(--border);
+            text-align: center; position: relative; overflow: hidden;
+        }
+        .stat-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%); pointer-events: none;
+        }
+        .stat-card:hover { border-color: var(--accent); transform: translateY(-8px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .stat-card .label { font-size: 0.7rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 8px; display: block; }
+        .stat-card .val { font-size: 1.8rem; font-weight: 800; color: #fff; letter-spacing: -1px; }
+
+        /* Controls */
+        .search-box { margin-bottom: 20px; position: relative; }
+        .search-box input {
+            width: 100%; background: #0d1117; border: 1px solid var(--border);
+            padding: 16px 25px; border-radius: 20px; color: #fff; outline: none;
+            font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 20px rgba(0, 210, 255, 0.2); }
+
+        /* Table */
+        .table-container {
+            background: var(--card-bg); border-radius: 30px; border: 1px solid var(--border);
+            overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+        }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        
+        th {
+            background: rgba(22, 27, 34, 0.8); padding: 22px 10px; color: var(--text-sub);
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer; border-bottom: 1px solid var(--border);
+        }
+        th:hover { color: var(--accent); }
+        
+        td { padding: 16px 10px; border-bottom: 1px solid rgba(48, 54, 61, 0.3); text-align: center; font-size: 0.95rem; }
+        tr:hover { background: rgba(56, 189, 248, 0.04); }
+
+        /* Fixed Columns Width */
+        .col-id { width: 70px; font-family: monospace; opacity: 0.4; }
+        .col-img { width: 70px; }
+        .col-name { width: auto; text-align: left !important; font-weight: 700; color: #fff; }
+        .col-role { width: 140px; }
+        .col-gold { width: 130px; font-weight: 700; }
+        .col-online { width: 180px; color: var(--text-sub); font-size: 0.85rem; }
+        .col-tmc { width: 90px; font-weight: 800; font-size: 1.1rem; }
+
+        .avatar { width: 42px; height: 42px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border); }
+        .avatar:hover { transform: rotate(5deg) scale(1.2); border-color: var(--accent); }
+
+        .role-badge {
+            font-size: 0.7rem; padding: 5px 12px; border-radius: 10px; font-weight: 800;
+            display: inline-block; min-width: 95px; letter-spacing: 0.5px;
+        }
+        .role-1 { background: rgba(255, 75, 92, 0.15); color: #ff4b5c; border: 1px solid rgba(255, 75, 92, 0.3); box-shadow: 0 0 15px rgba(255, 75, 92, 0.1); }
+        .role-2 { background: rgba(255, 204, 0, 0.15); color: #ffcc00; border: 1px solid rgba(255, 204, 0, 0.3); }
+        .role-3 { background: rgba(147, 51, 234, 0.15); color: #a855f7; border: 1px solid rgba(147, 51, 234, 0.3); }
+        .role-4 { background: rgba(139, 148, 158, 0.1); color: #8b949e; border: 1px solid rgba(139, 148, 158, 0.2); }
+
+        .green { color: var(--success); text-shadow: 0 0 10px rgba(0, 255, 136, 0.2); }
+        .red { color: var(--danger); opacity: 0.8; }
+        
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        th.sorted-asc::after { content: " ▴"; color: var(--accent); }
+        th.sorted-desc::after { content: " ▾"; color: var(--accent); }
+
+        @media (max-width: 900px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .col-id, .col-online { display: none; }
+            h1 { font-size: 2.2rem; }
+        }
+    </style>
 </head>
 <body>
 
-<h1 id="guild-name">Đang tải...</h1>
-<p id="report-date" style="text-align:center;">Báo cáo hôm nay</p>
+<div class="container">
+    <div class="header">
+        <h1 id="guild-name">TÔNG MÔN</h1>
+        <div id="report-date"><div class="live-dot"></div> Đang kết nối dữ liệu...</div>
+    </div>
 
-<div class="stats-container">
-  <div class="stat-box">Tổng Thành Viên<br><span id="total-members" class="number">0</span></div>
-  <div class="stat-box">Đã Cống Hiến<br><span id="donated-count" class="number">0</span></div>
-  <div class="stat-box">Tổng Vàng Cống<br><span id="total-gold" class="number">0</span></div>
-  <div class="stat-box">Tỷ Lệ Hoàn Thành<br><span id="percent" class="number">0%</span></div>
-  <div class="stat-box">Người Đánh Boss<br><span id="boss-player-count" class="number">0</span></div>
-  <div class="stat-box">Tổng Số Boss Đánh<br><span id="boss-total-count" class="number">0</span></div>
-  <div class="stat-box">Tổng Boss Đã Tiêu Diệt<br><span id="boss-hit-count" class="number">0</span></div>
-  <div class="stat-box">Ngày Boss Cuối<br><span id="boss-last-date" class="number">Chưa có</span></div>
+    <div class="stats-grid">
+        <div class="stat-card"><span class="label">Đệ Tử</span><span id="total-members" class="val">0</span></div>
+        <div class="stat-box stat-card"><span class="label">Cống Hiến</span><span id="donated-count" class="val" style="color:var(--success)">0</span></div>
+        <div class="stat-box stat-card"><span class="label">Quỹ Tông</span><span id="total-gold" class="val">0</span></div>
+        <div class="stat-box stat-card"><span class="label">Tỷ Lệ</span><span id="percent" class="val" style="color:var(--accent)">0%</span></div>
+        <div class="stat-box stat-card"><span class="label">Ngày Boss</span><span id="boss-last-date" class="val" style="font-size:1rem; color:var(--warning)">--</span></div>
+        <div class="stat-box stat-card"><span class="label">Diệt Boss</span><span id="boss-hit-count" class="val">0</span></div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="search-input" placeholder="Tìm kiếm đệ tử, chức vụ hoặc hành tung..." onkeyup="filterTable()">
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-id" data-sort="id">ID</th>
+                    <th class="col-img">ẢNH</th>
+                    <th class="col-name" data-sort="name">DANH TÍNH</th>
+                    <th class="col-role" data-sort="role">CHỨC VỤ</th>
+                    <th class="col-gold" data-sort="gold">VÀNG GÓP</th>
+                    <th class="col-online" data-sort="online">HÀNH TUNG</th>
+                    <th class="col-tmc" data-sort="point">TMC</th>
+                </tr>
+            </thead>
+            <tbody id="guild-table"></tbody>
+        </table>
+    </div>
 </div>
-
-<div class="boss-box">
-  <div class="boss-title">Báo Cáo Boss Tông Môn</div>
-  <div id="boss-list" class="boss-list">Đang tải dữ liệu boss...</div>
-</div>
-
-<table>
-  <thead>
-    <tr>
-      <th data-sort="id">ID Game</th>
-      <th>Ảnh</th>
-      <th data-sort="name">Tên</th>
-      <th data-sort="role">Chức Vụ</th>
-      <th data-sort="gold">Vàng</th>
-      <th data-sort="online">Online Cuối</th>
-      <th data-sort="point">Điểm TMC</th>
-    </tr>
-  </thead>
-  <tbody id="guild-table"></tbody>
-</table>
 
 <script>
-// ====== CẤU HÌNH DOMAIN (CHỈ SỬA Ở ĐÂY KHI WEB ĐỔI LINK) ======
-const DOMAIN = "https://cmangax14.com";
-const guild_id = 22;
-const roleMap = {1:"Tông chủ",2:"Phó Tông chủ",3:"Trưởng lão",4:"Thành viên"};
-let idToName = {}, lastBossSnapshot = {bossInfoStr:"",playersKey:""};
-const LOCAL_SORT_KEY="guild_sort_v2";
+const DOMAIN = "https://cmangax14.com", guild_id = 22;
+const roleMap = {1:"Tông chủ", 2:"Phó Tông chủ", 3:"Trưởng lão", 4:"Thành viên"};
+let currentSort = {column:"point", asc:false};
 
-// Hàm color điểm TMC
-function rankColor(point) {
-    if (!point) return "#94a3b8";        // gray
-    if (point >= 300) return "#ef4444";  // đỏ
-    if (point >= 200) return "#eab308";  // vàng
-    if (point >= 80) return "#22c55e";   // xanh lá
-    if (point > 50) return "#6ebddb";    // xanh dương nhạt
-    return "#dba3a3";                     // hồng nhạt <=50
+const safeParse = v => { try { return typeof v==="string" ? JSON.parse(v) : v||{}; } catch { return {}; }};
+const parseNum = v => {
+    if(v==null) return null;
+    const n = Number(String(v).trim().replace(/[^\d.-]/g,""));
+    return Number.isFinite(n) ? n : null;
+};
+
+function getRankColor(p) {
+    if (p >= 300) return "#ff4b5c"; if (p >= 200) return "#ffcc00";
+    if (p >= 80) return "#00ff88"; return "#00d2ff";
 }
 
-const safeParse = v => {try{return typeof v==="string"?JSON.parse(v):v||{}}catch{return{}};}
-const parseNum = v => {if(v==null) return null; const n=Number(String(v).trim().replace(/[^\d.-]/g,"")); return Number.isFinite(n)?n:null;}
-const toVNTime = s => {if(!s)return""; const d=new Date(s.replace(" ","T")); if(isNaN(d))return s; const p=x=>x.toString().padStart(2,"0"); return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())} - ${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;}
+async function loadGuildReport() {
+    try {
+        const [gRes, mRes, sRes] = await Promise.all([
+            fetch(`${DOMAIN}/api/get_data_by_id?table=game_guild&data=data,donate&id=${guild_id}`).then(r => r.json()),
+            fetch(`${DOMAIN}/api/game_guild_member?waiting=0&guild=${guild_id}`).then(r => r.json()),
+            fetch(`${DOMAIN}/api/score_list?type=guild_battle_player&limit=500`).then(r => r.json())
+        ]);
 
-let currentSort = (()=>{try{return JSON.parse(localStorage.getItem(LOCAL_SORT_KEY))}catch{return{column:"id",asc:true}}})();
+        const guild = safeParse(gRes.data.data), donateMap = safeParse(gRes.data.donate);
+        const members = mRes.data || mRes, scoreMap = {};
+        (sRes.data || sRes).forEach(s => {
+            const i = s.info ? safeParse(s.info) : {};
+            if(i.id) scoreMap[i.id] = Number(s.score) || 0;
+        });
 
-const saveSort = ()=>{try{localStorage.setItem(LOCAL_SORT_KEY,JSON.stringify(currentSort))}catch{}};
-const applySortIcon = ()=>document.querySelectorAll("th[data-sort]").forEach(th=>{th.classList.remove("sorted-asc","sorted-desc"); if(th.dataset.sort===currentSort.column) th.classList.add(currentSort.asc?"sorted-asc":"sorted-desc");});
-const initSortHeader = ()=>document.querySelectorAll("th[data-sort]").forEach(th=>{if(th.__attached)return; th.addEventListener("click",()=>sortTable(th.dataset.sort,true)); th.__attached=true;});
+        document.getElementById("guild-name").innerText = (guild.name || "TÔNG MÔN").toUpperCase();
+        document.getElementById("report-date").innerHTML = `<div class="live-dot"></div> Cập nhật: ${new Date().toLocaleTimeString('vi-VN')}`;
+        document.getElementById("boss-last-date").innerText = guild.boss?.day || "Chưa rõ";
+        document.getElementById("boss-hit-count").innerText = (guild.boss?.amount || 0).toLocaleString();
 
-function sortTable(col, toggle=true){
-  const tbody = document.getElementById("guild-table");
-  const rows = Array.from(tbody.querySelectorAll("tr"));
-  if(toggle){if(currentSort.column===col)currentSort.asc=!currentSort.asc; else {currentSort.column=col; currentSort.asc=true;} saveSort();}
-  rows.sort((a,b)=>{
-    let aRaw=a.dataset[col]||"", bRaw=b.dataset[col]||"";
-    if(col==="online"){const at=new Date(aRaw.replace(" ","T")).getTime()||0, bt=new Date(bRaw.replace(" ","T")).getTime()||0; if(at!==bt)return(at-bt)*(currentSort.asc?1:-1);}
-    const aN=parseNum(aRaw), bN=parseNum(bRaw); if(aN!==null && bN!==null && aN!==bN) return (aN-bN)*(currentSort.asc?1:-1);
-    return (String(aRaw).toLowerCase().localeCompare(String(bRaw).toLowerCase(),"vi"))*(currentSort.asc?1:-1);
-  });
-  tbody.innerHTML=""; rows.forEach(r=>tbody.appendChild(r));
-  applySortIcon();
+        const tbody = document.getElementById("guild-table"); tbody.innerHTML = "";
+        let donated = 0, totalG = 0;
+
+        members.forEach(m => {
+            const info = safeParse(m.info), gold = Number(donateMap[String(m.id_game_character)]) || 0;
+            if(gold > 0) { donated++; totalG += gold; }
+            const point = scoreMap[m.id_game_character] || 0;
+            
+            const tr = document.createElement("tr");
+            tr.dataset.id = m.id_game_character; tr.dataset.name = (info.name||"").toLowerCase();
+            tr.dataset.role = m.role || "4"; tr.dataset.gold = gold;
+            tr.dataset.online = (m.last_online||"").replace(" ","T"); tr.dataset.point = point;
+            
+            tr.innerHTML = `
+                <td class="col-id">#${m.id_game_character}</td>
+                <td class="col-img"><img class="avatar" src="${DOMAIN}/assets/tmp/avatar/${info.avatar || "1.png"}" onerror="this.src='${DOMAIN}/assets/tmp/avatar/1.png'"></td>
+                <td class="col-name"><b>${info.name || "Ẩn danh"}</b></td>
+                <td class="col-role"><span class="role-badge role-${m.role || 4}">${roleMap[m.role] || "Thành viên"}</span></td>
+                <td class="col-gold ${gold > 0 ? "green" : "red"}">${gold > 0 ? gold.toLocaleString() : "Chưa cống"}</td>
+                <td class="col-online">${m.last_online || "--"}</td>
+                <td class="col-tmc" style="color:${getRankColor(point)}">${point}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById("total-members").innerText = members.length;
+        document.getElementById("donated-count").innerText = donated;
+        document.getElementById("total-gold").innerText = totalG.toLocaleString();
+        document.getElementById("percent").innerText = ((donated / members.length) * 100).toFixed(1) + "%";
+        
+        initSort(); sortTable(currentSort.column, false);
+    } catch (e) { console.error(e); }
 }
 
-async function fetchJSON(url){const r=await fetch(url); if(!r.ok)throw new Error(`HTTP ${r.status} ${url}`); return await r.json();}
-const getGold = (map,m)=>{const g=Number(map[String(m.id_game_character)]); return isNaN(g)?null:g===0?0:g;}
-
-async function loadGuildReport(){
-  try{
-    const guildRes = await fetchJSON(`${DOMAIN}/api/get_data_by_id?table=game_guild&data=data,donate&id=${guild_id}`);
-    const guild = safeParse(guildRes.data.data);
-    const donateMap = safeParse(guildRes.data.donate);
-
-    const membersRes = await fetchJSON(`${DOMAIN}/api/game_guild_member?waiting=0&guild=${guild_id}`);
-    const members = membersRes.data||membersRes;
-
-    const scoreRes = await fetchJSON(`${DOMAIN}/api/score_list?type=guild_battle_player&limit=500`);
-    const scoreMap={}; (scoreRes.data||scoreRes).forEach(s=>{const i=s.info?safeParse(s.info):{}; if(i.id)scoreMap[i.id]=Number(s.score)||0;});
-
-    document.getElementById("guild-name").innerText = guild.name||"Tông Môn";
-    document.getElementById("report-date").innerText = `Cập nhật: ${toVNTime(new Date().toISOString())}`;
-
-    const tbody = document.getElementById("guild-table"); tbody.innerHTML="";
-    let donated=0, totalGold=0;
-    members.forEach(m=>{
-      const info=safeParse(m.info), gold=getGold(donateMap,m)||0;
-      if(gold>0){donated++; totalGold+=gold;}
-      idToName[m.id_user]=info.name||`N/A`;
-      const point = scoreMap[m.id_game_character]||0;
-      const tr = document.createElement("tr");
-      tr.dataset.id=m.id_game_character;
-      tr.dataset.name=(info.name||"").toLowerCase();
-      tr.dataset.role=m.role||"";
-      tr.dataset.gold=gold;
-      tr.dataset.online=(m.last_online||"").replace(" ","T");
-      tr.dataset.point=point;
-      tr.innerHTML=`
-        <td class="debug-id">${m.id_game_character}</td>
-        <td><img class="avatar" src="${DOMAIN}/assets/tmp/avatar/${info.avatar||"1.png"}"></td>
-        <td><b>${info.name||"N/A"}</b></td>
-        <td>${roleMap[m.role]||"Thành viên"}</td>
-        <td class="${gold>0?"green":"red"}">${gold>0?gold.toLocaleString():"Chưa Cống"}</td>
-        <td style="font-size:12px;color:#94a3b8">${m.last_online||""}</td>
-        <td style="color:${rankColor(point)};font-weight:bold">${point}</td>`;
-      tbody.appendChild(tr);
+function filterTable() {
+    const input = document.getElementById("search-input").value.toLowerCase();
+    const rows = document.querySelectorAll("#guild-table tr");
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
     });
-
-    document.getElementById("total-members").innerText=members.length;
-    document.getElementById("donated-count").innerText=donated;
-    document.getElementById("total-gold").innerText=totalGold.toLocaleString();
-    document.getElementById("percent").innerText=((donated/members.length)*100).toFixed(1)+"%";
-
-    initSortHeader(); sortTable("gold",false);
-    await loadBossReport(guild);
-
-  }catch(e){console.error(e);}
 }
 
-async function loadBossReport(guild){
-  try{
-    const bossObj = guild.boss||{day:"",amount:0};
-    document.getElementById("boss-total-count").innerText = bossObj.amount||0;
-    document.getElementById("boss-hit-count").innerText = bossObj.amount||0;
-    document.getElementById("boss-last-date").innerText = bossObj.day||"Chưa có";
-
-    const chat = await fetchJSON(`${DOMAIN}/api/chat?last=999999999&channel=guild&channel_id=${guild_id}`).catch(()=>[]);
-    const bossMap={};
-    chat.forEach(c=>{
-      if(!c.text) return;
-      const m=/tiêu diệt thành công\s*<span>(.*?)<\/span>/i.exec(c.text); if(!m) return;
-      const n=m[1]; if(!bossMap[n]) bossMap[n]={date:c.date, players:new Set()};
-      bossMap[n].players.add(idToName[c.id_user]||`ID:${c.id_user}`);
+function initSort() {
+    document.querySelectorAll("th[data-sort]").forEach(th => {
+        if(th._at) return;
+        th.addEventListener("click", () => sortTable(th.dataset.sort, true));
+        th._at = true;
     });
+}
 
-    const infoStr = JSON.stringify(bossObj);
-    const playersKey = Object.entries(bossMap).map(([k,v])=>`${k}:${[...v.players].sort().join(",")}`).sort().join("|");
-    if(lastBossSnapshot.bossInfoStr===infoStr && lastBossSnapshot.playersKey===playersKey) return;
-    lastBossSnapshot={bossInfoStr:infoStr, playersKey};
-
-    const divList=document.getElementById("boss-list"); divList.classList.add("fade-out");
-    setTimeout(()=>{
-      divList.innerHTML = Object.keys(bossMap).length===0?"Không có dữ liệu boss":
-        Object.entries(bossMap).map(([n,d])=>`<div>⚔️ <b>${n}</b> - <span style="color:#22c55e">${[...d.players].join(", ")}</span><small style="float:right;color:#64748b">${d.date}</small></div>`).join("");
-      divList.classList.remove("fade-out");
-    },200);
-
-    const totalPlayers = new Set(); Object.values(bossMap).forEach(b=>b.players.forEach(p=>totalPlayers.add(p)));
-    document.getElementById("boss-player-count").innerText=totalPlayers.size;
-
-  }catch(e){console.error("Lỗi Boss:",e);}
+function sortTable(col, toggle) {
+    const tbody = document.getElementById("guild-table"), rows = Array.from(tbody.querySelectorAll("tr"));
+    if(toggle) { 
+        if(currentSort.column === col) currentSort.asc = !currentSort.asc; 
+        else { currentSort.column = col; currentSort.asc = true; } 
+    }
+    rows.sort((a,b) => {
+        let aV = a.dataset[col], bV = b.dataset[col];
+        const an = parseNum(aV), bn = parseNum(bV);
+        if(an !== null && bn !== null) return (an - bn) * (currentSort.asc ? 1 : -1);
+        return aV.localeCompare(bV, "vi") * (currentSort.asc ? 1 : -1);
+    });
+    rows.forEach(r => tbody.appendChild(r));
+    document.querySelectorAll("th[data-sort]").forEach(th => {
+        th.classList.remove("sorted-asc", "sorted-desc");
+        if(th.dataset.sort === currentSort.column) th.classList.add(currentSort.asc ? "sorted-asc" : "sorted-desc");
+    });
 }
 
 loadGuildReport();
+setInterval(loadGuildReport, 120000); // Tự động cập nhật sau mỗi 2 phút
 </script>
 </body>
 </html>

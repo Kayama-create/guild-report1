@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tông Môn Dashboard - Manual Refresh</title>
+    <title>Tông Môn Dashboard - Mobile Optimized</title>
     <link href="https://fonts.googleapis.com" rel="stylesheet">
     <style>
         :root {
-            --bg: #02040a; --card: rgba(13, 17, 23, 0.9); --header: #161b22;
+            --bg: #02040a; --card: rgba(13, 17, 23, 0.95); --header: #161b22;
             --text-main: #f0f6fc; --text-sub: #8b949e; --border: rgba(48, 54, 61, 0.8);
             --accent: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.2);
             --success: #00ff88; --danger: #ff4b5c; --warning: #ffcc00; --shadow: rgba(0, 0, 0, 0.8);
@@ -23,72 +23,73 @@
         body {
             font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg);
             background-image: radial-gradient(circle at 50% 0%, var(--accent-glow) 0%, transparent 50%);
-            color: var(--text-main); margin: 0; padding: 20px 10px; min-height: 100vh;
+            color: var(--text-main); margin: 0; padding: 15px 10px; min-height: 100vh;
         }
         .container { max-width: 1200px; margin: 0 auto; position: relative; }
 
-        /* Theme Toggle */
         .theme-toggle {
-            position: absolute; top: 0; right: 0; width: 42px; height: 42px; border-radius: 12px;
+            position: absolute; top: 0; right: 0; width: 40px; height: 40px; border-radius: 12px;
             background: var(--card); border: 1px solid var(--border); cursor: pointer;
             display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px var(--shadow); z-index: 100;
         }
 
-        header { text-align: center; margin-bottom: 30px; }
-        h1 {
-            font-size: 2.2rem; font-weight: 800; margin: 0; letter-spacing: -1.5px;
-            background: linear-gradient(180deg, #fff 0%, var(--accent) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 10px var(--accent-glow));
-        }
-        #update-info { color: var(--text-sub); font-size: 0.85rem; margin-top: 8px; }
+        header { text-align: center; margin-bottom: 25px; }
+        h1 { font-size: 2rem; font-weight: 800; margin: 0; background: linear-gradient(180deg, #fff 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #update-info { color: var(--text-sub); font-size: 0.8rem; margin-top: 5px; }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 25px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
         @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(6, 1fr); } }
 
         .stat-card {
-            background: var(--card); padding: 15px 10px; border-radius: 18px;
+            background: var(--card); padding: 12px 8px; border-radius: 15px;
             border: 1px solid var(--border); text-align: center; box-shadow: 0 4px 15px var(--shadow);
         }
-        .stat-card .label { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; font-weight: 700; margin-bottom: 5px; display: block; }
-        .stat-card .val { font-size: 1.2rem; font-weight: 800; color: #fff; }
+        .stat-card .label { font-size: 0.6rem; color: var(--text-sub); text-transform: uppercase; font-weight: 700; margin-bottom: 3px; display: block; }
+        .stat-card .val { font-size: 1.1rem; font-weight: 800; color: #fff; }
         [data-theme="light"] .stat-card .val { color: var(--text-main); }
 
-        .search-box { margin-bottom: 20px; }
+        .search-box { margin-bottom: 15px; }
         .search-box input {
             width: 100%; background: var(--card); border: 1px solid var(--border);
-            padding: 12px 20px; border-radius: 14px; color: var(--text-main); font-size: 0.9rem; outline: none;
+            padding: 12px 15px; border-radius: 12px; color: var(--text-main); font-size: 0.9rem; outline: none;
         }
 
-        /* Table Mobile Support */
+        /* --- TABLE MOBILE OPTIMIZATION --- */
         .table-wrapper {
-            background: var(--card); border-radius: 20px; border: 1px solid var(--border);
+            background: var(--card); border-radius: 18px; border: 1px solid var(--border);
             overflow-x: auto; -webkit-overflow-scrolling: touch; box-shadow: 0 10px 30px var(--shadow);
+            position: relative;
         }
-        table { width: 100%; border-collapse: collapse; min-width: 850px; }
-        th {
-            background: var(--header); padding: 15px 10px; color: var(--text-sub);
-            font-size: 0.7rem; font-weight: 800; text-transform: uppercase; cursor: pointer; border-bottom: 1px solid var(--border);
+        
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 850px; }
+
+        th, td { padding: 12px 8px; border-bottom: 1px solid rgba(48, 54, 61, 0.3); text-align: center; font-size: 0.85rem; }
+        th { background: var(--header); color: var(--text-sub); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; cursor: pointer; position: sticky; top: 0; z-index: 10; }
+        
+        /* CỘT CỐ ĐỊNH (STICKY COLUMN) */
+        .sticky-col {
+            position: sticky; left: 0; z-index: 5; background: var(--card) !important;
+            border-right: 1px solid var(--border); box-shadow: 4px 0 8px rgba(0,0,0,0.2);
         }
-        td { padding: 12px 8px; border-bottom: 1px solid rgba(48, 54, 61, 0.3); text-align: center; font-size: 0.85rem; }
-        tr:hover { background: rgba(56, 189, 248, 0.03); }
+        th.sticky-col { z-index: 11; background: var(--header) !important; }
+
+        tr:hover td { background: rgba(56, 189, 248, 0.05); }
 
         /* Column Widths */
-        .col-id { width: 70px; opacity: 0.4; font-family: monospace; }
-        .col-img { width: 60px; }
-        .col-name { width: 180px; text-align: left !important; font-weight: 700; color: #fff; }
-        [data-theme="light"] .col-name { color: var(--text-main); }
-        .col-role { width: 130px; }
+        .col-id { width: 60px; opacity: 0.4; }
+        .col-img { width: 50px; }
+        .col-name { width: 150px; text-align: left !important; font-weight: 700; color: var(--accent); }
+        .col-role { width: 120px; }
         .col-gold { width: 110px; font-weight: 700; }
-        .col-online { width: 180px; color: var(--text-sub); font-size: 0.8rem; }
-        .col-tmc { width: 90px; font-weight: 800; font-size: 1.05rem; }
+        .col-online { width: 170px; color: var(--text-sub); font-size: 0.75rem; }
+        .col-tmc { width: 80px; font-weight: 800; font-size: 1rem; }
 
-        .avatar { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border); vertical-align: middle; }
-        .badge { font-size: 0.65rem; padding: 4px 8px; border-radius: 8px; font-weight: 800; display: inline-block; min-width: 90px; }
-        .badge-1 { background: rgba(255, 75, 92, 0.15); color: #ff4b5c; border: 1px solid rgba(255, 75, 92, 0.3); }
-        .badge-2 { background: rgba(255, 204, 0, 0.15); color: #ffcc00; border: 1px solid rgba(255, 204, 0, 0.3); }
-        .badge-3 { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); }
-        .badge-4 { background: rgba(139, 148, 158, 0.1); color: var(--text-sub); border: 1px solid var(--border); }
+        .avatar { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); vertical-align: middle; }
+        .badge { font-size: 0.6rem; padding: 3px 8px; border-radius: 6px; font-weight: 800; display: inline-block; min-width: 85px; }
+        .badge-1 { background: rgba(255, 75, 92, 0.15); color: #ff4b5c; }
+        .badge-2 { background: rgba(255, 204, 0, 0.15); color: #ffcc00; }
+        .badge-3 { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+        .badge-4 { background: rgba(139, 148, 158, 0.1); color: var(--text-sub); }
 
         .green { color: var(--success); } .red { color: var(--danger); opacity: 0.8; }
         th.sorted-asc::after { content: " ▴"; color: var(--accent); }
@@ -101,15 +102,15 @@
     <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-icon">🌙</span></button>
     <header>
         <h1 id="guild-name">TÔNG MÔN</h1>
-        <div id="update-info">Dữ liệu cố định - Tải lại trang để cập nhật</div>
+        <div id="update-info">Linh khí tụ hội...</div>
     </header>
 
     <div class="stats-grid">
         <div class="stat-card"><span class="label">Đệ Tử</span><span id="total-members" class="val">0</span></div>
-        <div class="stat-card"><span class="label">Góp Vàng</span><span id="donated-count" class="val" style="color:var(--success)">0</span></div>
-        <div class="stat-card"><span class="label">Quỹ Vàng</span><span id="total-gold" class="val">0</span></div>
+        <div class="stat-card"><span class="label">Cống Hiến</span><span id="donated-count" class="val" style="color:var(--success)">0</span></div>
+        <div class="stat-card"><span class="label">Tổng Vàng</span><span id="total-gold" class="val">0</span></div>
         <div class="stat-card"><span class="label">Tiến Độ</span><span id="percent" class="val" style="color:var(--accent)">0%</span></div>
-        <div class="stat-card"><span class="label">Boss Cuối</span><span id="boss-last-date" class="val" style="font-size:0.85rem; color:var(--warning)">--</span></div>
+        <div class="stat-card"><span class="label">Ngày Boss</span><span id="boss-last-date" class="val" style="font-size:0.8rem; color:var(--warning)">--</span></div>
         <div class="stat-card"><span class="label">Diệt Boss</span><span id="boss-hit-count" class="val">0</span></div>
     </div>
 
@@ -123,17 +124,17 @@
                 <tr>
                     <th class="col-id" data-sort="id">ID</th>
                     <th class="col-img">ẢNH</th>
-                    <th class="col-name" data-sort="name">TÊN</th>
+                    <th class="col-name sticky-col" data-sort="name">TÊN ĐỆ TỬ</th>
                     <th class="col-role" data-sort="role">CHỨC VỤ</th>
                     <th class="col-gold" data-sort="gold">VÀNG</th>
-                    <th class="col-online" data-sort="online">ONLINE</th>
+                    <th class="col-online" data-sort="online">HÀNH TUNG</th>
                     <th class="col-tmc" data-sort="point">TMC</th>
                 </tr>
             </thead>
             <tbody id="guild-table"></tbody>
         </table>
     </div>
-    <p style="text-align: center; color: var(--text-sub); font-size: 0.7rem; margin-top: 15px;">← Vuốt sang ngang để xem đầy đủ cột trên mobile →</p>
+    <p style="text-align: center; color: var(--text-sub); font-size: 0.65rem; margin-top: 10px;">💡 Vuốt ngang để xem Vàng, Online và Điểm TMC</p>
 </div>
 
 <script>
@@ -146,9 +147,9 @@ function toggleTheme() {
     const target = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
     html.setAttribute("data-theme", target);
     document.getElementById("theme-icon").innerText = target === "light" ? "☀️" : "🌙";
-    localStorage.setItem("tm_theme_manual", target);
+    localStorage.setItem("tm_theme_sticky", target);
 }
-const savedTheme = localStorage.getItem("tm_theme_manual") || "dark";
+const savedTheme = localStorage.getItem("tm_theme_sticky") || "dark";
 document.documentElement.setAttribute("data-theme", savedTheme);
 document.getElementById("theme-icon").innerText = savedTheme === "light" ? "☀️" : "🌙";
 
@@ -158,11 +159,6 @@ const parseNum = v => {
     const n = Number(String(v).trim().replace(/[^\d.-]/g,""));
     return Number.isFinite(n) ? n : null;
 };
-
-function getTMCColor(p) {
-    if (p >= 300) return "var(--danger)"; if (p >= 200) return "var(--warning)";
-    if (p >= 80) return "var(--success)"; return "var(--accent)";
-}
 
 async function loadData() {
     try {
@@ -180,7 +176,7 @@ async function loadData() {
         });
 
         document.getElementById("guild-name").innerText = (guild.name || "TÔNG MÔN").toUpperCase();
-        document.getElementById("update-info").innerText = `Cập nhật lúc: ${new Date().toLocaleTimeString('vi-VN')}`;
+        document.getElementById("update-info").innerText = `Đồng bộ: ${new Date().toLocaleTimeString('vi-VN')}`;
         document.getElementById("boss-last-date").innerText = guild.boss?.day || "N/A";
         document.getElementById("boss-hit-count").innerText = (guild.boss?.amount || 0).toLocaleString();
 
@@ -200,11 +196,11 @@ async function loadData() {
             tr.innerHTML = `
                 <td class="col-id">#${m.id_game_character}</td>
                 <td class="col-img"><img class="avatar" src="${DOMAIN}/assets/tmp/avatar/${info.avatar || "1.png"}" onerror="this.src='${DOMAIN}/assets/tmp/avatar/1.png'"></td>
-                <td class="col-name">${info.name || "N/A"}</td>
+                <td class="col-name sticky-col">${info.name || "N/A"}</td>
                 <td class="col-role"><span class="badge badge-${m.role || 4}">${roleMap[m.role] || "Thành viên"}</span></td>
                 <td class="col-gold ${gold > 0 ? 'green' : 'red'}">${gold > 0 ? gold.toLocaleString() : 'Chưa cống'}</td>
                 <td class="col-online">${m.last_online || "--"}</td>
-                <td class="col-tmc" style="color:${getTMCColor(point)}">${point}</td>
+                <td class="col-tmc" style="color:${point >= 200 ? 'var(--warning)' : 'var(--accent)'}">${point}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -251,7 +247,6 @@ function sortTable(col, toggle) {
     });
 }
 
-// Chỉ chạy một lần khi load trang
 loadData();
 </script>
 </body>

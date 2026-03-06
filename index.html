@@ -1,175 +1,156 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tông Môn Dashboard - Deep Dark Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tông Môn Dashboard - Manual Refresh</title>
     <link href="https://fonts.googleapis.com" rel="stylesheet">
     <style>
         :root {
-            --bg: #02040a;
-            --card-bg: rgba(13, 17, 23, 0.8);
-            --accent: #00d2ff;
-            --accent-glow: rgba(0, 210, 255, 0.4);
-            --success: #00ff88;
-            --danger: #ff4b5c;
-            --warning: #ffcc00;
-            --text-main: #f0f6fc;
-            --text-sub: #8b949e;
-            --border: rgba(48, 54, 61, 0.8);
+            --bg: #02040a; --card: rgba(13, 17, 23, 0.9); --header: #161b22;
+            --text-main: #f0f6fc; --text-sub: #8b949e; --border: rgba(48, 54, 61, 0.8);
+            --accent: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.2);
+            --success: #00ff88; --danger: #ff4b5c; --warning: #ffcc00; --shadow: rgba(0, 0, 0, 0.8);
+        }
+        [data-theme="light"] {
+            --bg: #f8fafc; --card: #ffffff; --header: #f1f5f9;
+            --text-main: #1e293b; --text-sub: #64748b; --border: #e2e8f0;
+            --accent: #4f46e5; --accent-glow: rgba(79, 70, 229, 0.05);
+            --success: #059669; --danger: #e11d48; --warning: #d97706;
         }
 
-        * { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-
+        * { box-sizing: border-box; transition: background 0.3s, border 0.3s; }
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: var(--bg);
-            background-image: 
-                radial-gradient(circle at 20% 20%, rgba(0, 210, 255, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(147, 51, 234, 0.05) 0%, transparent 40%);
-            color: var(--text-main);
-            margin: 0; padding: 40px 15px;
-            min-height: 100vh;
+            font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% 0%, var(--accent-glow) 0%, transparent 50%);
+            color: var(--text-main); margin: 0; padding: 20px 10px; min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; position: relative; }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute; top: 0; right: 0; width: 42px; height: 42px; border-radius: 12px;
+            background: var(--card); border: 1px solid var(--border); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px var(--shadow); z-index: 100;
         }
 
-        .container { max-width: 1100px; margin: 0 auto; }
-
-        /* Header */
-        .header { text-align: center; margin-bottom: 45px; }
+        header { text-align: center; margin-bottom: 30px; }
         h1 {
-            font-size: 3.2rem; font-weight: 800; margin: 0;
-            letter-spacing: -2px;
+            font-size: 2.2rem; font-weight: 800; margin: 0; letter-spacing: -1.5px;
             background: linear-gradient(180deg, #fff 0%, var(--accent) 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 15px var(--accent-glow));
+            filter: drop-shadow(0 0 10px var(--accent-glow));
         }
-        #report-date {
-            color: var(--text-sub); font-size: 0.9rem; margin-top: 10px;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .live-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); animation: blink 1.5s infinite; }
+        #update-info { color: var(--text-sub); font-size: 0.85rem; margin-top: 8px; }
 
-        /* Bento Stats */
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 40px;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 25px; }
+        @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(6, 1fr); } }
+
         .stat-card {
-            background: var(--card-bg); backdrop-filter: blur(20px);
-            padding: 24px 15px; border-radius: 24px; border: 1px solid var(--border);
-            text-align: center; position: relative; overflow: hidden;
+            background: var(--card); padding: 15px 10px; border-radius: 18px;
+            border: 1px solid var(--border); text-align: center; box-shadow: 0 4px 15px var(--shadow);
         }
-        .stat-card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%); pointer-events: none;
-        }
-        .stat-card:hover { border-color: var(--accent); transform: translateY(-8px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .stat-card .label { font-size: 0.7rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 8px; display: block; }
-        .stat-card .val { font-size: 1.8rem; font-weight: 800; color: #fff; letter-spacing: -1px; }
+        .stat-card .label { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; font-weight: 700; margin-bottom: 5px; display: block; }
+        .stat-card .val { font-size: 1.2rem; font-weight: 800; color: #fff; }
+        [data-theme="light"] .stat-card .val { color: var(--text-main); }
 
-        /* Controls */
-        .search-box { margin-bottom: 20px; position: relative; }
+        .search-box { margin-bottom: 20px; }
         .search-box input {
-            width: 100%; background: #0d1117; border: 1px solid var(--border);
-            padding: 16px 25px; border-radius: 20px; color: #fff; outline: none;
-            font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            width: 100%; background: var(--card); border: 1px solid var(--border);
+            padding: 12px 20px; border-radius: 14px; color: var(--text-main); font-size: 0.9rem; outline: none;
         }
-        .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 20px rgba(0, 210, 255, 0.2); }
 
-        /* Table */
-        .table-container {
-            background: var(--card-bg); border-radius: 30px; border: 1px solid var(--border);
-            overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+        /* Table Mobile Support */
+        .table-wrapper {
+            background: var(--card); border-radius: 20px; border: 1px solid var(--border);
+            overflow-x: auto; -webkit-overflow-scrolling: touch; box-shadow: 0 10px 30px var(--shadow);
         }
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        
+        table { width: 100%; border-collapse: collapse; min-width: 850px; }
         th {
-            background: rgba(22, 27, 34, 0.8); padding: 22px 10px; color: var(--text-sub);
-            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-            cursor: pointer; border-bottom: 1px solid var(--border);
+            background: var(--header); padding: 15px 10px; color: var(--text-sub);
+            font-size: 0.7rem; font-weight: 800; text-transform: uppercase; cursor: pointer; border-bottom: 1px solid var(--border);
         }
-        th:hover { color: var(--accent); }
-        
-        td { padding: 16px 10px; border-bottom: 1px solid rgba(48, 54, 61, 0.3); text-align: center; font-size: 0.95rem; }
-        tr:hover { background: rgba(56, 189, 248, 0.04); }
+        td { padding: 12px 8px; border-bottom: 1px solid rgba(48, 54, 61, 0.3); text-align: center; font-size: 0.85rem; }
+        tr:hover { background: rgba(56, 189, 248, 0.03); }
 
-        /* Fixed Columns Width */
-        .col-id { width: 70px; font-family: monospace; opacity: 0.4; }
-        .col-img { width: 70px; }
-        .col-name { width: auto; text-align: left !important; font-weight: 700; color: #fff; }
-        .col-role { width: 140px; }
-        .col-gold { width: 130px; font-weight: 700; }
-        .col-online { width: 180px; color: var(--text-sub); font-size: 0.85rem; }
-        .col-tmc { width: 90px; font-weight: 800; font-size: 1.1rem; }
+        /* Column Widths */
+        .col-id { width: 70px; opacity: 0.4; font-family: monospace; }
+        .col-img { width: 60px; }
+        .col-name { width: 180px; text-align: left !important; font-weight: 700; color: #fff; }
+        [data-theme="light"] .col-name { color: var(--text-main); }
+        .col-role { width: 130px; }
+        .col-gold { width: 110px; font-weight: 700; }
+        .col-online { width: 180px; color: var(--text-sub); font-size: 0.8rem; }
+        .col-tmc { width: 90px; font-weight: 800; font-size: 1.05rem; }
 
-        .avatar { width: 42px; height: 42px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border); }
-        .avatar:hover { transform: rotate(5deg) scale(1.2); border-color: var(--accent); }
+        .avatar { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border); vertical-align: middle; }
+        .badge { font-size: 0.65rem; padding: 4px 8px; border-radius: 8px; font-weight: 800; display: inline-block; min-width: 90px; }
+        .badge-1 { background: rgba(255, 75, 92, 0.15); color: #ff4b5c; border: 1px solid rgba(255, 75, 92, 0.3); }
+        .badge-2 { background: rgba(255, 204, 0, 0.15); color: #ffcc00; border: 1px solid rgba(255, 204, 0, 0.3); }
+        .badge-3 { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); }
+        .badge-4 { background: rgba(139, 148, 158, 0.1); color: var(--text-sub); border: 1px solid var(--border); }
 
-        .role-badge {
-            font-size: 0.7rem; padding: 5px 12px; border-radius: 10px; font-weight: 800;
-            display: inline-block; min-width: 95px; letter-spacing: 0.5px;
-        }
-        .role-1 { background: rgba(255, 75, 92, 0.15); color: #ff4b5c; border: 1px solid rgba(255, 75, 92, 0.3); box-shadow: 0 0 15px rgba(255, 75, 92, 0.1); }
-        .role-2 { background: rgba(255, 204, 0, 0.15); color: #ffcc00; border: 1px solid rgba(255, 204, 0, 0.3); }
-        .role-3 { background: rgba(147, 51, 234, 0.15); color: #a855f7; border: 1px solid rgba(147, 51, 234, 0.3); }
-        .role-4 { background: rgba(139, 148, 158, 0.1); color: #8b949e; border: 1px solid rgba(139, 148, 158, 0.2); }
-
-        .green { color: var(--success); text-shadow: 0 0 10px rgba(0, 255, 136, 0.2); }
-        .red { color: var(--danger); opacity: 0.8; }
-        
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .green { color: var(--success); } .red { color: var(--danger); opacity: 0.8; }
         th.sorted-asc::after { content: " ▴"; color: var(--accent); }
         th.sorted-desc::after { content: " ▾"; color: var(--accent); }
-
-        @media (max-width: 900px) {
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .col-id, .col-online { display: none; }
-            h1 { font-size: 2.2rem; }
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
+    <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-icon">🌙</span></button>
+    <header>
         <h1 id="guild-name">TÔNG MÔN</h1>
-        <div id="report-date"><div class="live-dot"></div> Đang kết nối dữ liệu...</div>
-    </div>
+        <div id="update-info">Dữ liệu cố định - Tải lại trang để cập nhật</div>
+    </header>
 
     <div class="stats-grid">
         <div class="stat-card"><span class="label">Đệ Tử</span><span id="total-members" class="val">0</span></div>
-        <div class="stat-box stat-card"><span class="label">Cống Hiến</span><span id="donated-count" class="val" style="color:var(--success)">0</span></div>
-        <div class="stat-box stat-card"><span class="label">Quỹ Tông</span><span id="total-gold" class="val">0</span></div>
-        <div class="stat-box stat-card"><span class="label">Tỷ Lệ</span><span id="percent" class="val" style="color:var(--accent)">0%</span></div>
-        <div class="stat-box stat-card"><span class="label">Ngày Boss</span><span id="boss-last-date" class="val" style="font-size:1rem; color:var(--warning)">--</span></div>
-        <div class="stat-box stat-card"><span class="label">Diệt Boss</span><span id="boss-hit-count" class="val">0</span></div>
+        <div class="stat-card"><span class="label">Góp Vàng</span><span id="donated-count" class="val" style="color:var(--success)">0</span></div>
+        <div class="stat-card"><span class="label">Quỹ Vàng</span><span id="total-gold" class="val">0</span></div>
+        <div class="stat-card"><span class="label">Tiến Độ</span><span id="percent" class="val" style="color:var(--accent)">0%</span></div>
+        <div class="stat-card"><span class="label">Boss Cuối</span><span id="boss-last-date" class="val" style="font-size:0.85rem; color:var(--warning)">--</span></div>
+        <div class="stat-card"><span class="label">Diệt Boss</span><span id="boss-hit-count" class="val">0</span></div>
     </div>
 
     <div class="search-box">
-        <input type="text" id="search-input" placeholder="Tìm kiếm đệ tử, chức vụ hoặc hành tung..." onkeyup="filterTable()">
+        <input type="text" id="search-box" placeholder="Tìm tên đệ tử, chức vụ..." onkeyup="filterData()">
     </div>
 
-    <div class="table-container">
+    <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
                     <th class="col-id" data-sort="id">ID</th>
                     <th class="col-img">ẢNH</th>
-                    <th class="col-name" data-sort="name">DANH TÍNH</th>
+                    <th class="col-name" data-sort="name">TÊN</th>
                     <th class="col-role" data-sort="role">CHỨC VỤ</th>
-                    <th class="col-gold" data-sort="gold">VÀNG GÓP</th>
-                    <th class="col-online" data-sort="online">HÀNH TUNG</th>
+                    <th class="col-gold" data-sort="gold">VÀNG</th>
+                    <th class="col-online" data-sort="online">ONLINE</th>
                     <th class="col-tmc" data-sort="point">TMC</th>
                 </tr>
             </thead>
             <tbody id="guild-table"></tbody>
         </table>
     </div>
+    <p style="text-align: center; color: var(--text-sub); font-size: 0.7rem; margin-top: 15px;">← Vuốt sang ngang để xem đầy đủ cột trên mobile →</p>
 </div>
 
 <script>
 const DOMAIN = "https://cmangax14.com", guild_id = 22;
 const roleMap = {1:"Tông chủ", 2:"Phó Tông chủ", 3:"Trưởng lão", 4:"Thành viên"};
 let currentSort = {column:"point", asc:false};
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const target = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    html.setAttribute("data-theme", target);
+    document.getElementById("theme-icon").innerText = target === "light" ? "☀️" : "🌙";
+    localStorage.setItem("tm_theme_manual", target);
+}
+const savedTheme = localStorage.getItem("tm_theme_manual") || "dark";
+document.documentElement.setAttribute("data-theme", savedTheme);
+document.getElementById("theme-icon").innerText = savedTheme === "light" ? "☀️" : "🌙";
 
 const safeParse = v => { try { return typeof v==="string" ? JSON.parse(v) : v||{}; } catch { return {}; }};
 const parseNum = v => {
@@ -178,12 +159,12 @@ const parseNum = v => {
     return Number.isFinite(n) ? n : null;
 };
 
-function getRankColor(p) {
-    if (p >= 300) return "#ff4b5c"; if (p >= 200) return "#ffcc00";
-    if (p >= 80) return "#00ff88"; return "#00d2ff";
+function getTMCColor(p) {
+    if (p >= 300) return "var(--danger)"; if (p >= 200) return "var(--warning)";
+    if (p >= 80) return "var(--success)"; return "var(--accent)";
 }
 
-async function loadGuildReport() {
+async function loadData() {
     try {
         const [gRes, mRes, sRes] = await Promise.all([
             fetch(`${DOMAIN}/api/get_data_by_id?table=game_guild&data=data,donate&id=${guild_id}`).then(r => r.json()),
@@ -199,8 +180,8 @@ async function loadGuildReport() {
         });
 
         document.getElementById("guild-name").innerText = (guild.name || "TÔNG MÔN").toUpperCase();
-        document.getElementById("report-date").innerHTML = `<div class="live-dot"></div> Cập nhật: ${new Date().toLocaleTimeString('vi-VN')}`;
-        document.getElementById("boss-last-date").innerText = guild.boss?.day || "Chưa rõ";
+        document.getElementById("update-info").innerText = `Cập nhật lúc: ${new Date().toLocaleTimeString('vi-VN')}`;
+        document.getElementById("boss-last-date").innerText = guild.boss?.day || "N/A";
         document.getElementById("boss-hit-count").innerText = (guild.boss?.amount || 0).toLocaleString();
 
         const tbody = document.getElementById("guild-table"); tbody.innerHTML = "";
@@ -219,11 +200,11 @@ async function loadGuildReport() {
             tr.innerHTML = `
                 <td class="col-id">#${m.id_game_character}</td>
                 <td class="col-img"><img class="avatar" src="${DOMAIN}/assets/tmp/avatar/${info.avatar || "1.png"}" onerror="this.src='${DOMAIN}/assets/tmp/avatar/1.png'"></td>
-                <td class="col-name"><b>${info.name || "Ẩn danh"}</b></td>
-                <td class="col-role"><span class="role-badge role-${m.role || 4}">${roleMap[m.role] || "Thành viên"}</span></td>
-                <td class="col-gold ${gold > 0 ? "green" : "red"}">${gold > 0 ? gold.toLocaleString() : "Chưa cống"}</td>
+                <td class="col-name">${info.name || "N/A"}</td>
+                <td class="col-role"><span class="badge badge-${m.role || 4}">${roleMap[m.role] || "Thành viên"}</span></td>
+                <td class="col-gold ${gold > 0 ? 'green' : 'red'}">${gold > 0 ? gold.toLocaleString() : 'Chưa cống'}</td>
                 <td class="col-online">${m.last_online || "--"}</td>
-                <td class="col-tmc" style="color:${getRankColor(point)}">${point}</td>
+                <td class="col-tmc" style="color:${getTMCColor(point)}">${point}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -237,20 +218,17 @@ async function loadGuildReport() {
     } catch (e) { console.error(e); }
 }
 
-function filterTable() {
-    const input = document.getElementById("search-input").value.toLowerCase();
+function filterData() {
+    const val = document.getElementById("search-box").value.toLowerCase();
     const rows = document.querySelectorAll("#guild-table tr");
-    rows.forEach(row => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(input) ? "" : "none";
-    });
+    rows.forEach(r => { r.style.display = r.innerText.toLowerCase().includes(val) ? "" : "none"; });
 }
 
 function initSort() {
     document.querySelectorAll("th[data-sort]").forEach(th => {
-        if(th._at) return;
+        if(th._ok) return;
         th.addEventListener("click", () => sortTable(th.dataset.sort, true));
-        th._at = true;
+        th._ok = true;
     });
 }
 
@@ -273,8 +251,8 @@ function sortTable(col, toggle) {
     });
 }
 
-loadGuildReport();
-setInterval(loadGuildReport, 120000); // Tự động cập nhật sau mỗi 2 phút
+// Chỉ chạy một lần khi load trang
+loadData();
 </script>
 </body>
 </html>
